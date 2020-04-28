@@ -1,0 +1,56 @@
+{
+   "abstract" : "Net::SermonAudio - access sermonaudio.com apis from perl",
+   "author" : [
+      "Ben Herweyer <benjamin.herweyer@gmail.com>"
+   ],
+   "dynamic_config" : 0,
+   "license" : [
+      "mit"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "Net::SermonAudio",
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "Module::Build::Tiny" : "0.034"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Test::More" : "0",
+            "strict" : "0"
+         }
+      },
+      "runtime" : {
+         "recommends" : {
+            "JSON::XS" : "0"
+         },
+         "requires" : {
+            "Mojolicious" : "0",
+            "perl" : "5.020000"
+         }
+      },
+      "test" : {
+         "recommends" : {
+            "CPAN::Meta" : "2.120900"
+         },
+         "requires" : {
+            "Test::More" : "0",
+            "Test::Fatal" : "0"
+         }
+      }
+   },
+   "release_status" : "beta",
+   "resources" : {
+      "homepage" : "https://github.com/bherw/Net-SermonAudio",
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/bherw/Net-SermonAudio.git",
+         "web" : "https://github.com/bherw/Net-SermonAudio"
+      }
+   },
+   "version" : "0.001"
+}
