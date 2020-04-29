@@ -22,7 +22,7 @@ has subtitle => (is => 'ro', isa => Maybe [ Str ]);
 has series => (is => 'ro', isa => Maybe [ InstanceOf [ 'Net::SermonAudio::Model::SermonSeries' ] ]);
 has preach_date => (is => 'ro', isa => InstanceOf [ 'Date::Tiny' ]);
 has staff_pick_date => (is => 'ro', isa => Maybe [ InstanceOf [ 'Date::Tiny' ] ]);
-has publish_timestamp => (is => 'ro', isa => InstanceOf [ 'DateTime' ]);
+has publish_timestamp => (is => 'ro', isa => Maybe [ InstanceOf [ 'DateTime' ] ]);
 has update_date => (is => 'ro', isa => InstanceOf [ 'DateTime' ]);
 has language_code => (is => 'ro', isa => Str);
 has bible_text => (is => 'ro', isa => Maybe [ Str ]);
@@ -47,7 +47,7 @@ sub to_string($self) {
 
 sub parse($class, $obj) {
     $class->new(
-        _obj => $obj,
+        _obj                    => $obj,
         sermon_id               => $obj->{sermonID},
         broadcaster             => $class->broadcaster_class->parse($obj->{broadcaster}),
         speaker                 => $class->speaker_class->parse($obj->{speaker}),
@@ -57,7 +57,7 @@ sub parse($class, $obj) {
         series                  => ($obj->{series} ? $class->series_class->parse($obj->{series}) : undef),
         preach_date             => Date::Tiny->from_string($obj->{preachDate}),
         staff_pick_date         => (eval { Date::Tiny->from_string($obj->{pickDate}) } || undef),
-        publish_timestamp       => DateTime->from_epoch(epoch => $obj->{publishTimestamp}),
+        publish_timestamp       => ($obj->{publishTimestamp} ? DateTime->from_epoch(epoch => $obj->{publishTimestamp}) : undef),
         update_date             => DateTime->from_epoch(epoch => $obj->{updateDate}),
         language_code           => $obj->{languageCode},
         bible_text              => $obj->{bibleText},
