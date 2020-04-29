@@ -30,7 +30,7 @@
          },
          "requires" : {
             "Mojolicious" : "0",
-            "perl" : "5.020000"
+            "perl": "5.026000"
          }
       },
       "test" : {
