@@ -3,6 +3,7 @@ use strict;
 use warnings FATAL => 'all';
 use Test::More;
 use Net::SermonAudio::API::Broadcaster;
+use Net::SermonAudio::Util qw(await_get);
 use Future::AsyncAwait;
 
 use experimental 'signatures';
@@ -22,8 +23,7 @@ sub get_api($test) {
 sub get_sermon :Tests ($self) {
     my $sa = $self->get_api or return;
 
-    my $s;
-    (async sub { $s = await $sa->get_sermon(122201427568190) })->()->wait;
+    my $s = await_get($sa->get_sermon(122201427568190));
 
     subtest series => sub {
         my $series = $s->series;
