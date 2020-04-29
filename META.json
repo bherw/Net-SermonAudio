@@ -45,6 +45,7 @@
             "CPAN::Meta" : "2.120900"
          },
          "requires" : {
+            "Test::Class::Load" : "0",
             "Test::More" : "0",
             "Test::Fatal" : "0"
          }
