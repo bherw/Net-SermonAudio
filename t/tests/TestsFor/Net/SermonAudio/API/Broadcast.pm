@@ -116,4 +116,67 @@ sub get_sermon :Tests ($self) {
     # TODO: test keywords with a sermon that has some
 }
 
+sub create_update_delete_sermon :Tests ($self) {
+    my $sa = $self->get_api;
+
+    my $sermon;
+    my $create_params = {
+        accept_copyright => 1,
+        full_title       => 'Test Sermon',
+        speaker_name     => 'Andrew Quigley',
+        preach_date      => Date::Tiny->new(year => 2020, month => 2, day => 3),
+        event_type       => 'Sunday - AM',
+        display_title    => 'Display Title',
+        subtitle         => 'Test Series',
+        bible_text       => 'Mark 2:3; Luke 3:1-4:2',
+        more_info_text   => 'more info test',
+        language_code    => 'en',
+    };
+    my $update_params = {
+        accept_copyright => 1,
+        full_title       => 'Test Sermon 2',
+        speaker_name     => 'Pastor Matt Kingswood',
+        preach_date      => Date::Tiny->new(year => 2019, month => 1, day => 2),
+        event_type       => 'Sunday - PM',
+        display_title    => 'Display Title 2',
+        subtitle         => 'Test Series 2',
+        bible_text       => 'Genesis 1:1',
+        more_info_text   => 'more info text 2',
+        language_code    => 'fr',
+        news_in_focus    => 0,
+        keywords         => ['abc', '123']
+    };
+
+    # Create sermon
+    $sermon = await_get($sa->create_sermon(%$create_params));
+
+    subtest create => sub {
+        is $sermon->$_, $create_params->{$_}, $_ for qw(full_title event_type display_title subtitle bible_text more_info_text language_code);
+        is $sermon->speaker->display_name, 'Andrew Quigley', 'speaker_name';
+        is $sermon->preach_date->ymd, '2020-02-03', 'preach_date';
+        is $sermon->series->title, 'Test Series', 'series.title';
+        is_deeply $sermon->keywords, [], 'keywords';
+    };
+
+    # Update
+    $sermon = await_get($sa->update_sermon($sermon, %$update_params));
+
+    subtest update => sub {
+        is $sermon->$_, $update_params->{$_}, $_ for qw(full_title event_type display_title subtitle bible_text more_info_text language_code);
+        is $sermon->speaker->display_name, 'Pastor Matt Kingswood', 'speaker_name';
+        is $sermon->preach_date->ymd, '2019-01-02', 'preach_date';
+        is $sermon->series->title, 'Test Series 2', 'series.title';
+        is_deeply $sermon->keywords, ['abc', '123'], 'keywords';
+    };
+
+    # Delete
+    await_get((async sub {
+        await $sa->delete_sermon($sermon->sermon_id);
+        $sermon = eval { await $sa->get_sermon($sermon->sermon_id) };
+        fail if !$@;
+        is $@->code, 404, 'sermon 404d';
+    })->());
+    ok !defined $sermon, 'sermon got deleted';
+}
+
 1;

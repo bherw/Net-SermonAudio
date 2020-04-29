@@ -67,11 +67,7 @@ sub post {
 }
 
 sub put {
-    shift->_request(PUT => @_)->then(sub($tx) {
-        my $code = $tx->res->code;
-        # OK || CREATED || NO CONTENT
-        $code == 200 || $code == 201 || $code == 204
-    })
+    shift->_request(PUT => @_)
 }
 
 sub patch {
