@@ -29,7 +29,14 @@
             "JSON::XS" : "0"
          },
          "requires" : {
-            "Mojolicious" : "0",
+            "Date::Tiny": "0",
+            "DateTime": "0",
+            "Future::AsyncAwait": "0",
+            "IO::Socket::SSL" : "2.009",
+            "Moo": "0",
+            "Mojolicious": "0",
+            "Throwable": "0",
+            "Type::Tiny": "0",
             "perl": "5.026000"
          }
       },
