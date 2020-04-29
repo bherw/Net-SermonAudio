@@ -15,7 +15,7 @@ extends qw(Net::SermonAudio::API);
 sub sermon_class { 'Net::SermonAudio::Model::Sermon' }
 
 sub parse_sermon($self, $tx) {
-    return $self->sermon_class->parse($tx->res->json) if $tx->res->code == 200;
+    return $self->sermon_class->parse($tx->res->json) if $tx->res->code >= 200 && $tx->res->code <= 299;
 
     require Net::SermonAudio::X::ApiException;
     Net::SermonAudio::X::ApiException->throw(message => $tx->res->json);
