@@ -8,6 +8,7 @@ no warnings 'experimental';
 
 has _obj => (is => 'ro');
 has [ qw(series_id title broadcaster_id latest earliest updated count) ] => (is => 'ro');
+# Note that the statistics only apply to published sermons.
 
 sub to_string($self) {
     "<SermonSeries @{ [ $self->title ] } (@{ [ $self->count ] } sermons)>"
