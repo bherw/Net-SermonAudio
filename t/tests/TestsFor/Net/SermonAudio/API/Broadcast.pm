@@ -258,10 +258,14 @@ sub series_crud :Tests ($self) {
         return;
     };
 
+    ok !await_get($sa->series_exists($broadcaster_id, "Foobar")), 'series doesn\'t exist yet';
+
     my $series = await_get $sa->create_series($broadcaster_id, "Foobar");
 
     isa_ok $series, 'Net::SermonAudio::Model::SermonSeries';
     is $series->title, 'Foobar';
+
+    ok await_get($sa->series_exists($broadcaster_id, 'Foobar')), 'series exists now';
 
     # This value can take a bit to update
     my $poll_count = 0;

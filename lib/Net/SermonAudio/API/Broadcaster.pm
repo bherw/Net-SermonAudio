@@ -133,6 +133,12 @@ async sub get_series($self, $broadcaster_id, $series, %opt) {
     return $self->parse_series(await $self->get("node/broadcasters/$broadcaster_id/series/$id_or_title", %opt));
 }
 
+async sub series_exists($self, $broadcaster_id, $series, %opt) {
+    assert_Str($broadcaster_id);
+    my $id_or_title = ref $series ? $series->series_id : assert_Str($series);
+    return (await $self->get("node/broadcasters/$broadcaster_id/series/$id_or_title", %opt))->res->code == 200;
+}
+
 async sub create_series($self, $broadcaster_id, $title, %opt) {
     assert_Str($broadcaster_id);
     assert_Str($title);
