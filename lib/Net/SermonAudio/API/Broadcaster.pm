@@ -92,12 +92,12 @@ async sub update_sermon_by_id($self, $sermon_id, %opt) {
 
 async sub publish_sermon($self, $sermon, %opt) {
     my $sermon_id = ref $sermon ? $sermon->sermon_id : assert_Str($sermon);
-    return await $self->patch("node/sermons/$sermon_id", form => { publishNow => 'True' }, %opt);
+    return $self->_assert_success(await $self->patch("node/sermons/$sermon_id", form => { publishNow => 'True' }, %opt));
 }
 
 async sub delete_sermon($self, $sermon, %opt) {
     my $sermon_id = ref $sermon ? $sermon->sermon_id : assert_Str($sermon);
-    return await $self->delete("node/sermons/$sermon_id", %opt);
+    return $self->_assert_success(await $self->delete("node/sermons/$sermon_id", %opt));
 }
 
 async sub duplicate_sermon($self, $sermon, %opt) {
