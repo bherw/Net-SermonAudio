@@ -294,4 +294,11 @@ sub series_crud :Tests ($self) {
     is $@->code, 404, 'deleted';
 }
 
+sub speaker_exists :Tests ($self) {
+    my $sa = $self->get_api;
+
+    ok await_get $sa->speaker_exists('Andrew Quigley');
+    ok !await_get $sa->speaker_exists('A speaker who clearly should not exist');
+}
+
 1;

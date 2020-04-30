@@ -110,6 +110,11 @@ async sub get_speaker($self, $speaker, %opt) {
     return $self->parse_speaker(await $self->get("node/speakers/$speaker_name", %opt));
 }
 
+async sub speaker_exists($self, $speaker, %opt) {
+    my $speaker_name = ref $speaker ? $speaker->display_name : assert_Str($speaker);
+    return (await $self->get("node/speakers/$speaker_name", %opt))->res->code == 200;
+}
+
 async sub upload_audio($self, $sermon, $path) {
     await $self->_upload_media('original-audio', $sermon, $path)
 }
