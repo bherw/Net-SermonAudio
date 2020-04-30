@@ -7,7 +7,12 @@ our @EXPORT = qw(await_get);
 sub await_get {
     my $promise = shift;
     my (@return, $error) = @_;
-    $promise->then(sub { @return = @_ }, sub { $error = shift })->wait;
+    $promise = $promise->then(sub { @return = @_ }, sub { $error = shift });
+    if ($promise->can('wait')) {
+        $promise->wait;
+    } else {
+        $promise->get;
+    }
     die $error if $error;
     return wantarray ? @return : shift @return;
 }
