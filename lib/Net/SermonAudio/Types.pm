@@ -2,7 +2,7 @@ package Net::SermonAudio::Types;
 use strict;
 use warnings;
 use Type::Library -base;
-use Types::Standard qw(Enum Optional Str);
+use Types::Standard qw(Enum Maybe Str);
 
 __PACKAGE__->add_type(
     name   => 'MediaClass',
@@ -49,6 +49,6 @@ __PACKAGE__->add_type
             "Youth",
         ]);
 
-__PACKAGE__->add_type(name => 'OptionalStr', parent => Optional [ Str ]);
+__PACKAGE__->add_type(name => 'MaybeStr', parent => Maybe [ Str ]);
 
 1;

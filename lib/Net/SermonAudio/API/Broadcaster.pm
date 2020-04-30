@@ -3,7 +3,7 @@ use Date::Tiny;
 use DateTime::Tiny;
 use Moo;
 use Future::AsyncAwait;
-use Net::SermonAudio::Types qw(+OptionalStr +SermonEventType);
+use Net::SermonAudio::Types qw(+MaybeStr +SermonEventType);
 use Types::Standard qw(+Bool +Str InstanceOf Maybe ArrayRef);
 use Net::SermonAudio::Model::Sermon;
 use Net::SermonAudio::Model::Speaker;
@@ -84,10 +84,10 @@ sub _sermon_edit_params($self, %opt) {
         preachDate       => (InstanceOf [ 'Date::Tiny' ])->assert_return($opt{preach_date}),
         publishTimestamp => (Maybe [ InstanceOf [ 'DateTime' ] ])->assert_return($opt{publish_timestamp}),
         eventType        => assert_SermonEventType($opt{event_type}),
-        displayTitle     => assert_OptionalStr($opt{display_title}),
-        subtitle         => assert_OptionalStr($opt{subtitle}),
-        bibleText        => assert_OptionalStr($opt{bible_text}),
-        moreInfoText     => assert_OptionalStr($opt{more_info_text}),
+        displayTitle     => assert_MaybeStr($opt{display_title}),
+        subtitle         => assert_MaybeStr($opt{subtitle}),
+        bibleText        => assert_MaybeStr($opt{bible_text}),
+        moreInfoText     => assert_MaybeStr($opt{more_info_text}),
         languageCode     => assert_Str($opt{language_code}),
         keywords         => join(' ', @{ (Maybe [ ArrayRef [ Str ] ])->assert_return($opt{keywords}) // [] }),
         newsInFocus      => (assert_Bool($opt{news_in_focus}) ? 'True' : 'False'),
