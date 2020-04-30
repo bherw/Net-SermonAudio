@@ -5,6 +5,8 @@ use Net::SermonAudio::Model::Sermon;
 use experimental 'signatures';
 no warnings 'experimental';
 
+extends qw(Net::SermonAudio::Model::NodeList);
+
 sub node_class { shift->sermon_class }
 sub sermon_class { 'Net::SermonAudio::Model::Sermon' }
 
