@@ -6,6 +6,7 @@ use Future::AsyncAwait;
 use Net::SermonAudio::Types qw(+OptionalStr +SermonEventType);
 use Types::Standard qw(+Bool +Str InstanceOf Maybe ArrayRef);
 use Net::SermonAudio::Model::Sermon;
+use Net::SermonAudio::Model::Speaker;
 
 use experimental 'signatures';
 no warnings 'experimental';
@@ -13,6 +14,7 @@ no warnings 'experimental';
 extends qw(Net::SermonAudio::API);
 
 sub sermon_class { 'Net::SermonAudio::Model::Sermon' }
+sub speaker_class { 'Net::SermonAudio::Model::Speaker' }
 
 sub parse_sermon($self, $tx) {
     return $self->_parse($self->sermon_class, $tx);
@@ -55,6 +57,15 @@ async sub publish_sermon($self, $sermon_id, %opt) {
 async sub delete_sermon($self, $sermon_id, %opt) {
     assert_Str($sermon_id);
     return await $self->delete("node/sermons/$sermon_id", %opt);
+}
+
+async sub get_speaker($self, $speaker_name, %opt) {
+    assert_Str($speaker_name);
+    return $self->parse_speaker(await $self->get("node/speakers/$speaker_name", %opt));
+}
+
+sub parse_speaker($self, $tx) {
+    return $self->_parse($self->speaker_class, $tx);
 }
 
 sub _parse($self, $class, $tx) {

@@ -179,4 +179,12 @@ sub create_update_delete_sermon :Tests ($self) {
     ok !defined $sermon, 'sermon got deleted';
 }
 
+sub get_speaker :Tests ($self) {
+    my $sa = $self->get_api;
+
+    my $speaker = await_get $sa->get_speaker('Andrew Quigley');
+    isa_ok $speaker, 'Net::SermonAudio::Model::Speaker';
+    is $speaker->display_name, 'Andrew Quigley';
+}
+
 1;
