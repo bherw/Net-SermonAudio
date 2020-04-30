@@ -6,6 +6,8 @@ use Future::AsyncAwait;
 use Net::SermonAudio::Types qw(+MaybeStr +SermonEventType +SermonSortBy);
 use Types::Standard qw(+Bool +Str InstanceOf Maybe ArrayRef);
 use Net::SermonAudio::Model::Sermon;
+use Net::SermonAudio::Model::SermonSeries;
+use Net::SermonAudio::Model::SeriesList;
 use Net::SermonAudio::Model::SermonsList;
 use Net::SermonAudio::Model::Speaker;
 
@@ -16,6 +18,8 @@ extends qw(Net::SermonAudio::API);
 
 sub sermon_class { 'Net::SermonAudio::Model::Sermon' }
 sub sermons_list_class {'Net::SermonAudio::Model::SermonsList'}
+sub series_class { 'Net::SermonAudio::Model::SermonSeries' }
+sub series_list_class { 'Net::SermonAudio::Model::SeriesList' }
 sub speaker_class { 'Net::SermonAudio::Model::Speaker' }
 
 sub parse_sermon($self, $tx) {
@@ -113,8 +117,51 @@ async sub upload_video($self, $sermon, $path) {
     await $self->_upload_media('original-video', $sermon, $path)
 }
 
+async sub list_series($self, $broadcaster_id, %opt) {
+    assert_Str($broadcaster_id);
+    return $self->_parse($self->series_list_class, await $self->get("node/broadcasters/$broadcaster_id/series", %opt));
+}
+
+async sub get_series($self, $broadcaster_id, $series, %opt) {
+    assert_Str($broadcaster_id);
+    my $id_or_title = ref $series ? $series->series_id : assert_Str($series);
+    return $self->parse_series(await $self->get("node/broadcasters/$broadcaster_id/series/$id_or_title", %opt));
+}
+
+async sub create_series($self, $broadcaster_id, $title, %opt) {
+    assert_Str($broadcaster_id);
+    assert_Str($title);
+    my $path = "node/broadcasters/$broadcaster_id/series";
+    return $self->parse_series(await $self->post($path, form => { series_name => $title }, %opt));
+}
+
+async sub rename_series($self, $broadcaster_id, $series, $new_title, %opt) {
+    assert_Str($broadcaster_id);
+    my $id_or_title = ref $series ? $series->series_id : assert_Str($series);
+    my $path = "node/broadcasters/$broadcaster_id/series/$id_or_title";
+    return $self->_assert_success(await $self->patch($path, form => { new_series_name => $new_title }, %opt));
+}
+
+async sub delete_series($self, $broadcaster_id, $series, %opt) {
+    assert_Str($broadcaster_id);
+    my $id_or_title = ref $series ? $series->series_id : assert_Str($series);
+    my $path = "node/broadcasters/$broadcaster_id/series/$id_or_title";
+    return $self->_assert_success(await $self->delete($path, %opt));
+}
+
+sub parse_series($self, $tx) {
+    return $self->_parse($self->series_class, $tx);
+}
+
 sub parse_speaker($self, $tx) {
     return $self->_parse($self->speaker_class, $tx);
+}
+
+sub _assert_success($self, $tx) {
+    return 1 if $tx->res->code == 200 || $tx->res->code == 204;
+
+    require Net::SermonAudio::X::BroadcasterApiException;
+    Net::SermonAudio::X::BroadcasterApiException->throw(res => $tx->res, message => $tx->res->json);
 }
 
 sub _parse($self, $class, $tx) {

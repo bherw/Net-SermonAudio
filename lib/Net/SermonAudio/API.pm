@@ -80,19 +80,11 @@ sub put {
 }
 
 sub patch {
-    shift->_request(PATCH => @_)->then(sub($tx) {
-        my $code = $tx->res->code;
-        # OK || ACCEPTED || NO CONTENT
-        $code == 200 || $code == 202 || $code == 204
-    })
+    shift->_request(PATCH => @_)
 }
 
 sub delete {
-    shift->_request(DELETE => @_)->then(sub($tx) {
-        my $code = $tx->res->code;
-        # OK || ACCEPTED || NO CONTENT
-        $code == 200 || $code == 202 || $code == 204
-    })
+    shift->_request(DELETE => @_)
 }
 
 1;

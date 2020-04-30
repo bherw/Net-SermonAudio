@@ -253,4 +253,40 @@ sub get_speaker :Tests ($self) {
     is $speaker->display_name, 'Andrew Quigley';
 }
 
+sub series_crud :Tests ($self) {
+    my $sa = $self->get_api;
+    my $broadcaster_id = $ENV{SERMON_AUDIO_BROADCASTER_ID} or do {
+        $self->builder->skip("Broadcaster ID is needed to test series methods");
+        return;
+    };
+
+    my $series = await_get $sa->create_series($broadcaster_id, "Foobar");
+
+    isa_ok $series, 'Net::SermonAudio::Model::SermonSeries';
+    is $series->title, 'Foobar';
+
+    # This value can take a bit to update
+    my $poll_count = 0;
+    my $list = await_get $sa->list_series($broadcaster_id);
+    while ($list->total_count < 1 && $poll_count++ < POLL_MAX) {
+        sleep POLL_INTERVAL;
+        $list = await_get $sa->list_sermons(speaker_name => 'Andrew Quigley', include_drafts => 1);
+    }
+
+    isa_ok $list, 'Net::SermonAudio::Model::SeriesList';
+    is $list->total_count, 1;
+    is $list->results->[0]->series_id, $series->series_id;
+
+    await_get $sa->rename_series($broadcaster_id, $series, 'Baz');
+    $series = await_get $sa->get_series($broadcaster_id, 'Baz');
+
+    isa_ok $series, 'Net::SermonAudio::Model::SermonSeries';
+    is $series->title, 'Baz';
+
+    await_get $sa->delete_series($broadcaster_id, $series);
+    $series = eval { await_get $sa->get_series($broadcaster_id, $series) };
+    fail if !$@;
+    is $@->code, 404, 'deleted';
+}
+
 1;
