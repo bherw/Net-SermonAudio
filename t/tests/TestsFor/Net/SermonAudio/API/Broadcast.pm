@@ -283,6 +283,13 @@ sub series_crud :Tests ($self) {
     isa_ok $series, 'Net::SermonAudio::Model::SermonSeries';
     is $series->title, 'Baz';
 
+    my $sermon = await_get $sa->create_sermon(%$create_params);
+    await_get $sa->move_sermon_to_series($sermon, $series);
+    $sermon = await_get $sa->get_sermon($sermon);
+
+    is $sermon->series->series_id, $series->series_id, 'move_sermon_to_series works';
+    await_get $sa->delete_sermon($sermon);
+
     await_get $sa->delete_series($broadcaster_id, $series);
     $series = eval { await_get $sa->get_series($broadcaster_id, $series) };
     fail if !$@;

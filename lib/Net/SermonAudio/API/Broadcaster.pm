@@ -150,6 +150,13 @@ async sub delete_series($self, $broadcaster_id, $series, %opt) {
     return $self->_assert_success(await $self->delete($path, %opt));
 }
 
+async sub move_sermon_to_series($self, $sermon, $series, %opt) {
+    my $sermon_id = ref $sermon ? $sermon->sermon_id : assert_Str($sermon);
+    my $series_id = ref $series ? $series->series_id : assert_Str($series);
+    my $path = "node/sermons/$sermon_id";
+    return $self->_assert_success(await $self->patch($path, form => { series_id => $series_id }, %opt));
+}
+
 sub parse_series($self, $tx) {
     return $self->_parse($self->series_class, $tx);
 }
