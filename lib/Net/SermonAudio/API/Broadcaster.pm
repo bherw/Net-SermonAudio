@@ -59,6 +59,11 @@ async sub delete_sermon($self, $sermon_id, %opt) {
     return await $self->delete("node/sermons/$sermon_id", %opt);
 }
 
+async sub duplicate_sermon($self, $sermon_id, %opt) {
+    assert_Str($sermon_id);
+    return $self->parse_sermon(await $self->post("node/sermons/$sermon_id/duplicate", %opt));
+}
+
 async sub get_speaker($self, $speaker_name, %opt) {
     assert_Str($speaker_name);
     return $self->parse_speaker(await $self->get("node/speakers/$speaker_name", %opt));

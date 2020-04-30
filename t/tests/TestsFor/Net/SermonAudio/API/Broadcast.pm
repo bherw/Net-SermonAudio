@@ -180,6 +180,23 @@ sub create_update_delete_sermon :Tests ($self) {
     ok !defined $sermon, 'sermon got deleted';
 }
 
+sub duplicate_sermon :Tests ($self) {
+    my $sa = $self->get_api;
+
+    # Setup
+    my $sermon = await_get $sa->create_sermon(%$create_params);
+    my $sermon2 = await_get $sa->duplicate_sermon($sermon->sermon_id);
+
+    # Test
+    isa_ok $sermon2, 'Net::SermonAudio::Model::Sermon', 'duplicated sermon';
+    isnt $sermon2->sermon_id, $sermon->sermon_id, 'different id';
+    is $sermon2->display_title, $sermon->display_title, 'same title';
+
+    # Cleanup
+    await_get $sa->delete_sermon($sermon->sermon_id);
+    await_get $sa->delete_sermon($sermon2->sermon_id);
+}
+
 sub get_speaker :Tests ($self) {
     my $sa = $self->get_api;
 
