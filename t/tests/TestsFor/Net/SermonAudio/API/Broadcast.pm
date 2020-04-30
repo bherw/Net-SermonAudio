@@ -11,6 +11,18 @@ no warnings 'experimental';
 
 use parent qw(Test::Class);
 
+my $create_params = {
+    accept_copyright => 1,
+    full_title       => 'Test Sermon',
+    speaker_name     => 'Andrew Quigley',
+    preach_date      => Date::Tiny->new(year => 2020, month => 2, day => 3),
+    event_type       => 'Sunday - AM',
+    display_title    => 'Display Title',
+    bible_text       => 'Mark 2:3; Luke 3:1-4:2',
+    more_info_text   => 'more info test',
+    language_code    => 'en',
+};
+
 sub get_api($test) {
     unless ($ENV{SERMON_AUDIO_API_KEY}) {
         $test->builder->skip('Unable to test API features without a valid api key. Please set SERMON_AUDIO_API_KEY in your ENV.');
@@ -120,18 +132,7 @@ sub create_update_delete_sermon :Tests ($self) {
     my $sa = $self->get_api;
 
     my $sermon;
-    my $create_params = {
-        accept_copyright => 1,
-        full_title       => 'Test Sermon',
-        speaker_name     => 'Andrew Quigley',
-        preach_date      => Date::Tiny->new(year => 2020, month => 2, day => 3),
-        event_type       => 'Sunday - AM',
-        display_title    => 'Display Title',
-        subtitle         => 'Test Series',
-        bible_text       => 'Mark 2:3; Luke 3:1-4:2',
-        more_info_text   => 'more info test',
-        language_code    => 'en',
-    };
+    my $create_params = { %$create_params, subtitle => 'Test Series'};
     my $update_params = {
         accept_copyright => 1,
         full_title       => 'Test Sermon 2',
