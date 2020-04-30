@@ -69,6 +69,14 @@ async sub get_speaker($self, $speaker, %opt) {
     return $self->parse_speaker(await $self->get("node/speakers/$speaker_name", %opt));
 }
 
+async sub upload_audio($self, $sermon, $path) {
+    await $self->_upload_media('original-audio', $sermon, $path)
+}
+
+async sub upload_video($self, $sermon, $path) {
+    await $self->_upload_media('original-video', $sermon, $path)
+}
+
 sub parse_speaker($self, $tx) {
     return $self->_parse($self->speaker_class, $tx);
 }
@@ -97,6 +105,38 @@ sub _sermon_edit_params($self, %opt) {
         keywords         => join(' ', @{ (Maybe [ ArrayRef [ Str ] ])->assert_return($opt{keywords}) // [] }),
         newsInFocus      => (assert_Bool($opt{news_in_focus}) ? 'True' : 'False'),
     };
+}
+
+async sub _upload_media($self, $upload_type, $sermon, $path, %opt) {
+    my $params = $opt{params} // {};
+    $params->{uploadType} //= assert_Str($upload_type);
+    $params->{sermonID} //= ref $sermon ? $sermon->sermon_id : assert_Str($sermon);
+
+    if (!-f $path) {
+        die "Unable to read upload file: $path";
+    }
+
+    my $res = (await $self->post('media', form => $params))->res;
+
+    unless ($res->code == 201) { # CREATED
+        require Net::SermonAudio::X::BroadcasterApiException;
+        Net::SermonAudio::X::BroadcasterApiException->throw(res => $res, message => "Unable to create media upload: " . $res->body);
+    }
+
+    my $upload_url = $res->json->{uploadURL};
+    my $tx = $self->build_tx(POST => Mojo::URL->new($upload_url));
+    $tx->req->content->asset(Mojo::Asset::File->new(path => $path));
+    $res = (await $self->start($tx))->res;
+
+    unless ($res->code == 201) {
+        require Net::SermonAudio::X::BroadcasterApiException;
+        Net::SermonAudio::X::BroadcasterApiException->throw(
+            res     => $res,
+            message => "Error uploading media to $upload_url: " . $res->body,
+        );
+    }
+
+    1
 }
 
 1;

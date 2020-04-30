@@ -9,6 +9,9 @@ use Test::More;
 use experimental 'signatures';
 no warnings 'experimental';
 
+use constant POLL_INTERVAL => 5;
+use constant POLL_MAX => 12;
+
 use parent qw(Test::Class);
 
 my $create_params = {
@@ -195,6 +198,28 @@ sub duplicate_sermon :Tests ($self) {
     # Cleanup
     await_get $sa->delete_sermon($sermon->sermon_id);
     await_get $sa->delete_sermon($sermon2->sermon_id);
+}
+
+sub upload_audio :Tests ($self) {
+    my $sa = $self->get_api;
+
+    my $sermon = await_get $sa->create_sermon(%$create_params);
+    await_get $sa->upload_audio($sermon, 'corpus/1-sec-silence.mp3');
+
+    # XXX: Now wait a bit for them to finish processing the upload...
+    my $poll_count;
+    while ($sermon->media->audio->@* < 1 && $poll_count++ < POLL_MAX) {
+        sleep POLL_INTERVAL;
+        $sermon = await_get $sa->get_sermon($sermon->sermon_id);
+    }
+
+    fail 'processing timed out' unless $sermon->media->audio->@*;
+
+    my $audio = $sermon->media->audio->[0];
+    isa_ok $audio, 'Net::SermonAudio::Model::Media', 'media parsed';
+    is $audio->duration, 1, 'duration';
+
+    await_get $sa->delete_sermon($sermon);
 }
 
 sub get_speaker :Tests ($self) {
