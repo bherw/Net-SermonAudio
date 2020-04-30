@@ -15,10 +15,7 @@ extends qw(Net::SermonAudio::API);
 sub sermon_class { 'Net::SermonAudio::Model::Sermon' }
 
 sub parse_sermon($self, $tx) {
-    return $self->sermon_class->parse($tx->res->json) if $tx->res->code >= 200 && $tx->res->code <= 299;
-
-    require Net::SermonAudio::X::BroadcasterApiException;
-    Net::SermonAudio::X::BroadcasterApiException->throw(res => $tx->res, message => $tx->res->json);
+    return $self->_parse($self->sermon_class, $tx);
 }
 
 async sub get_sermon($self, $sermon_id, %opt) {
@@ -58,6 +55,13 @@ async sub publish_sermon($self, $sermon_id, %opt) {
 async sub delete_sermon($self, $sermon_id, %opt) {
     assert_Str($sermon_id);
     return await $self->delete("node/sermons/$sermon_id", %opt);
+}
+
+sub _parse($self, $class, $tx) {
+    return $class->parse($tx->res->json) if $tx->res->code >= 200 && $tx->res->code <= 299;
+
+    require Net::SermonAudio::X::BroadcasterApiException;
+    Net::SermonAudio::X::BroadcasterApiException->throw(res => $tx->res, message => $tx->res->json);
 }
 
 sub _sermon_edit_params($self, %opt) {
