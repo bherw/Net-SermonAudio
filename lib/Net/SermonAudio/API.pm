@@ -36,7 +36,7 @@ has ua => (
     default => sub { Mojo::UserAgent->new },
 );
 
-sub _request($self, $method, $path, %opts) {
+sub build_tx($self, $method, $path, %opts) {
     my $headers = $opts{headers} // {};
     $headers->{'X-API-Key'} //= $opts{api_key} // $self->api_key;
     $headers->{'Accept-Language'} // $opts{preferred_language} // $self->preferred_language;
@@ -55,7 +55,16 @@ sub _request($self, $method, $path, %opts) {
     }
 
     my $ua = $opts{ua} // $self->ua;
-    $ua->start_p($ua->build_tx($method => $url => $headers, %opts{qw(form json)}));
+    return $ua->build_tx($method => $url => $headers, %opts{qw(form json)});
+}
+
+sub start($self, $tx, %opts) {
+    my $ua = $opts{ua} // $self->ua;
+    return $ua->start_p($tx);
+}
+
+sub _request($self, $method, $path, %opts) {
+    return $self->start($self->build_tx($method, $path, %opts));
 }
 
 sub get {
