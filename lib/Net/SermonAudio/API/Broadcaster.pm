@@ -60,8 +60,9 @@ async sub list_sermons($self, %opt) {
     return $self->_parse($self->sermons_list_class, await $self->get($url, %opt));
 }
 
-async sub get_sermon($self, $sermon_id, %opt) {
-    $self->parse_sermon(await $self->get('node/sermons/' . assert_Str($sermon_id), %opt))
+async sub get_sermon($self, $sermon, %opt) {
+    my $sermon_id = ref $sermon ? $sermon->sermon_id : assert_Str($sermon);
+    $self->parse_sermon(await $self->get("node/sermons/$sermon_id", %opt))
 }
 
 async sub create_sermon($self, %opt) {
