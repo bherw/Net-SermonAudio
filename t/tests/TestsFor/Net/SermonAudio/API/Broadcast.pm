@@ -127,8 +127,6 @@ sub get_sermon :Tests ($self) {
     is $s->bible_text, 'John 15; Romans 1:1-6', 'bible_text';
     is $s->display_title, 'Obedience To Faith!', 'display_title';
     is $s->update_date->epoch, 1579991075, 'update_date';
-
-    # TODO: test keywords with a sermon that has some
 }
 
 sub sermons_list :Tests ($self) {
