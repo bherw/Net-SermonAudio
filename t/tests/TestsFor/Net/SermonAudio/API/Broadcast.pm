@@ -130,7 +130,7 @@ sub get_sermon :Tests ($self) {
 }
 
 sub sermons_list :Tests ($self) {
-    my $sa = $self->get_api;
+    my $sa = $self->get_api or return;
 
     my $list = await_get $sa->list_sermons(speaker_name => 'Andrew Quigley', include_drafts => 1);
 
@@ -153,7 +153,7 @@ sub sermons_list :Tests ($self) {
 }
 
 sub create_update_delete_sermon :Tests ($self) {
-    my $sa = $self->get_api;
+    my $sa = $self->get_api or return;
 
     my $sermon;
     my $create_params = { %$create_params, subtitle => 'Test Series'};
@@ -205,7 +205,7 @@ sub create_update_delete_sermon :Tests ($self) {
 }
 
 sub duplicate_sermon :Tests ($self) {
-    my $sa = $self->get_api;
+    my $sa = $self->get_api or return;
 
     # Setup
     my $sermon = await_get $sa->create_sermon(%$create_params);
@@ -222,7 +222,7 @@ sub duplicate_sermon :Tests ($self) {
 }
 
 sub upload_audio :Tests ($self) {
-    my $sa = $self->get_api;
+    my $sa = $self->get_api or return;
 
     my $sermon = await_get $sa->create_sermon(%$create_params);
     await_get $sa->upload_audio($sermon, 'corpus/1-sec-silence.mp3');
@@ -244,7 +244,7 @@ sub upload_audio :Tests ($self) {
 }
 
 sub get_speaker :Tests ($self) {
-    my $sa = $self->get_api;
+    my $sa = $self->get_api or return;
 
     my $speaker = await_get $sa->get_speaker('Andrew Quigley');
     isa_ok $speaker, 'Net::SermonAudio::Model::Speaker';
@@ -252,7 +252,7 @@ sub get_speaker :Tests ($self) {
 }
 
 sub series_crud :Tests ($self) {
-    my $sa = $self->get_api;
+    my $sa = $self->get_api or return;
     my $broadcaster_id = $ENV{SERMON_AUDIO_BROADCASTER_ID} or do {
         $self->builder->skip("Broadcaster ID is needed to test series methods");
         return;
@@ -295,7 +295,7 @@ sub series_crud :Tests ($self) {
 }
 
 sub speaker_exists :Tests ($self) {
-    my $sa = $self->get_api;
+    my $sa = $self->get_api or return;
 
     ok await_get $sa->speaker_exists('Andrew Quigley');
     ok !await_get $sa->speaker_exists('A speaker who clearly should not exist');
