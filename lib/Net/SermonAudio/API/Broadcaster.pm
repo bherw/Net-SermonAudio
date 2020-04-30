@@ -3,9 +3,10 @@ use Date::Tiny;
 use DateTime::Tiny;
 use Moo;
 use Future::AsyncAwait;
-use Net::SermonAudio::Types qw(+MaybeStr +SermonEventType);
+use Net::SermonAudio::Types qw(+MaybeStr +SermonEventType +SermonSortBy);
 use Types::Standard qw(+Bool +Str InstanceOf Maybe ArrayRef);
 use Net::SermonAudio::Model::Sermon;
+use Net::SermonAudio::Model::SermonsList;
 use Net::SermonAudio::Model::Speaker;
 
 use experimental 'signatures';
@@ -14,10 +15,45 @@ no warnings 'experimental';
 extends qw(Net::SermonAudio::API);
 
 sub sermon_class { 'Net::SermonAudio::Model::Sermon' }
+sub sermons_list_class {'Net::SermonAudio::Model::SermonsList'}
 sub speaker_class { 'Net::SermonAudio::Model::Speaker' }
 
 sub parse_sermon($self, $tx) {
     return $self->_parse($self->sermon_class, $tx);
+}
+
+async sub list_sermons($self, %opt) {
+    my %param = %{ $opt{params} // {} };
+    $param{book} = assert_Str($opt{book}) if defined $opt{book};
+    $param{chapter} = assert_Int($opt{chapter}) if defined $opt{chapter};
+    $param{chapterEnd} = assert_Int($opt{chapter_end}) if defined $opt{chapter_end};
+    $param{verse} = assert_Int($opt{verse}) if defined $opt{verse};
+    $param{verseEnd} = assert_Int($opt{verse_end}) if defined $opt{verse_end};
+    $param{eventType} = assert_SermonEventType($opt{event_type}) if defined $opt{event_type};
+    $param{languageCode} = assert_Str($opt{language_code}) if defined $opt{language_code};
+    $param{requireAudio} = _assert_conv_bool($opt{require_audio}) if defined $opt{require_audio};
+    $param{requireVideo} = _assert_conv_bool($opt{require_video}) if defined $opt{require_video};
+    $param{includeDrafts} = _assert_conv_bool($opt{include_drafts}) if defined $opt{include_drafts};
+    $param{includeScheduled} = _assert_conv_bool($opt{include_scheduled}) if defined $opt{include_scheduled};
+    $param{includePublished} = _assert_conv_bool($opt{include_published}) if defined $opt{include_published};
+
+    if (defined $opt{series}) {
+        die "broadcasterID must also be specified" unless defined $opt{broadcaster_id};
+        $param{series} = assert_Str($opt{series});
+    }
+
+    $param{broadcasterID} = assert_Str($opt{broadcaster_id}) if defined $opt{broadcaster_id};
+    $param{speakerName} = assert_Str($opt{speaker_name}) if defined $opt{speaker_name};
+    $param{staffPick} = _assert_conv_bool($opt{staff_pick}) if defined $opt{staff_pick};
+    $param{year} = assert_Int($opt{year}) if defined $opt{year};
+    $param{sortBy} = assert_SermonSortBy($opt{sort_by}) if defined $opt{sort_by};
+    $param{page} = assert_Int($opt{page}) if defined $opt{page};
+    $param{searchKeyword} = assert_Str($opt{search_keyword}) if defined $opt{search_keyword};
+
+    my $url = $self->base_url->clone;
+    $url->path->merge('node/sermons');
+    $url->query(\%param);
+    return $self->_parse($self->sermons_list_class, await $self->get($url, %opt));
 }
 
 async sub get_sermon($self, $sermon_id, %opt) {
@@ -91,7 +127,7 @@ sub _parse($self, $class, $tx) {
 sub _sermon_edit_params($self, %opt) {
     return {
         %opt{params},
-        acceptCopyright  => (assert_Bool($opt{accept_copyright}) ? 'True' : 'False'),
+        acceptCopyright  => _assert_conv_bool($opt{accept_copyright}),
         fullTitle        => assert_Str($opt{full_title}),
         speakerName      => assert_Str($opt{speaker_name}),
         preachDate       => (InstanceOf [ 'Date::Tiny' ])->assert_return($opt{preach_date}),
@@ -103,7 +139,7 @@ sub _sermon_edit_params($self, %opt) {
         moreInfoText     => assert_MaybeStr($opt{more_info_text}),
         languageCode     => assert_Str($opt{language_code}),
         keywords         => join(' ', @{ (Maybe [ ArrayRef [ Str ] ])->assert_return($opt{keywords}) // [] }),
-        newsInFocus      => (assert_Bool($opt{news_in_focus}) ? 'True' : 'False'),
+        newsInFocus      => _assert_conv_bool($opt{news_in_focus}),
     };
 }
 
@@ -137,6 +173,10 @@ async sub _upload_media($self, $upload_type, $sermon, $path, %opt) {
     }
 
     1
+}
+
+sub _assert_conv_bool {
+    assert_Bool($_[0]) ? 'True' : 'False'
 }
 
 1;

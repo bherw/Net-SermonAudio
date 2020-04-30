@@ -49,6 +49,11 @@ __PACKAGE__->add_type
             "Youth",
         ]);
 
+__PACKAGE__->add_type(
+    name   => 'SermonSortBy',
+    parent => Enum [ qw(downloads event language lastplayed newest oldest pickdate series speaker updated random added title) ],
+);
+
 __PACKAGE__->add_type(name => 'MaybeStr', parent => Maybe [ Str ]);
 
 1;

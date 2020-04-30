@@ -131,6 +131,29 @@ sub get_sermon :Tests ($self) {
     # TODO: test keywords with a sermon that has some
 }
 
+sub sermons_list :Tests ($self) {
+    my $sa = $self->get_api;
+
+    my $list = await_get $sa->list_sermons(speaker_name => 'Andrew Quigley', include_drafts => 1);
+
+    isa_ok $list, 'Net::SermonAudio::Model::SermonsList', 'isa';
+    is $list->total_count, 0, 'none yet';
+    is $list->next, undef, 'next';
+
+    my $sermon = await_get $sa->create_sermon(%$create_params);
+    # This value can take a bit to update
+    my $poll_count = 0;
+    while ($list->total_count < 1 && $poll_count++ < POLL_MAX) {
+        sleep POLL_INTERVAL;
+        $list = await_get $sa->list_sermons(speaker_name => 'Andrew Quigley', include_drafts => 1);
+    }
+
+    is $list->total_count, 1;
+    is $list->results->[0]->sermon_id, $sermon->sermon_id, 'got the sermon';
+
+    await_get $sa->delete_sermon($sermon);
+}
+
 sub create_update_delete_sermon :Tests ($self) {
     my $sa = $self->get_api;
 
