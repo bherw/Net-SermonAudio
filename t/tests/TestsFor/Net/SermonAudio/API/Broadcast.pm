@@ -1,10 +1,10 @@
 package TestsFor::Net::SermonAudio::API::Broadcast;
 use strict;
 use warnings FATAL => 'all';
-use Test::More;
+use Future::AsyncAwait;
 use Net::SermonAudio::API::Broadcaster;
 use Net::SermonAudio::Util qw(await_get);
-use Future::AsyncAwait;
+use Test::More;
 
 use experimental 'signatures';
 no warnings 'experimental';
