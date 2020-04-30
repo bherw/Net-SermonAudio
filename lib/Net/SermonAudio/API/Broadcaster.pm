@@ -1,6 +1,5 @@
 package Net::SermonAudio::API::Broadcaster;
 use Date::Tiny;
-use DateTime::Tiny;
 use Moo;
 use Future::AsyncAwait;
 use Net::SermonAudio::Types qw(+MaybeStr +SermonEventType +SermonSortBy);
