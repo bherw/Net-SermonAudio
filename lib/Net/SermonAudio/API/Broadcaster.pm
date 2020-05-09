@@ -192,7 +192,7 @@ sub _parse($self, $class, $tx) {
 sub _sermon_edit_params($self, %opt) {
     my $publish_timestamp = (Maybe [ InstanceOf [ 'DateTime' ] ])->assert_return($opt{publish_timestamp});
     return {
-        %opt{params},
+        %{ $opt{params} // {} },
         acceptCopyright  => _assert_conv_bool($opt{accept_copyright}),
         fullTitle        => assert_Str($opt{full_title}),
         speakerName      => assert_Str($opt{speaker_name}),
