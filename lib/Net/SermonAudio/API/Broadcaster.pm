@@ -3,7 +3,7 @@ use Date::Tiny;
 use Moo;
 use Future::AsyncAwait;
 use Net::SermonAudio::Types qw(+MaybeStr +SermonEventType +SermonSortBy);
-use Types::Standard qw(+Bool +Str InstanceOf Maybe ArrayRef);
+use Types::Standard qw(+Bool +Str +Int InstanceOf Maybe ArrayRef);
 use Net::SermonAudio::Model::Sermon;
 use Net::SermonAudio::Model::SermonSeries;
 use Net::SermonAudio::Model::SeriesList;
