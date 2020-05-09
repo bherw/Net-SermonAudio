@@ -190,13 +190,14 @@ sub _parse($self, $class, $tx) {
 }
 
 sub _sermon_edit_params($self, %opt) {
+    my $publish_timestamp = (Maybe [ InstanceOf [ 'DateTime' ] ])->assert_return($opt{publish_timestamp});
     return {
         %opt{params},
         acceptCopyright  => _assert_conv_bool($opt{accept_copyright}),
         fullTitle        => assert_Str($opt{full_title}),
         speakerName      => assert_Str($opt{speaker_name}),
         preachDate       => (InstanceOf [ 'Date::Tiny' ])->assert_return($opt{preach_date}),
-        publishTimestamp => (Maybe [ InstanceOf [ 'DateTime' ] ])->assert_return($opt{publish_timestamp}),
+        publishTimestamp => ($publish_timestamp ? $publish_timestamp->epoch : undef),
         eventType        => assert_SermonEventType($opt{event_type}),
         displayTitle     => assert_MaybeStr($opt{display_title}),
         subtitle         => assert_MaybeStr($opt{subtitle}),
