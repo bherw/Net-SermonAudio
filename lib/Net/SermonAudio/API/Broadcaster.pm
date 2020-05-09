@@ -54,8 +54,12 @@ async sub list_sermons($self, %opt) {
     $param{searchKeyword} = assert_Str($opt{search_keyword}) if defined $opt{search_keyword};
 
     my $url = $self->base_url->clone;
-    $url->path->merge('node/sermons');
-    $url->query(\%param);
+    if ($opt{next}  && (my $next = assert_Str($opt{next}))) {
+        $url->path_query($next);
+    } else {
+        $url->path->merge('node/sermons');
+        $url->query(\%param);
+    }
     return $self->_parse($self->sermons_list_class, await $self->get($url, %opt));
 }
 
