@@ -63,6 +63,34 @@ async sub list_sermons($self, %opt) {
     return $self->_parse($self->sermons_list_class, await $self->get($url, %opt));
 }
 
+# Experimental code warning!
+async sub list_sermons_between($self, $from_date, $to_date, %opt) {
+    die "cannot use year, sort_by, page options" if $opt{year} || $opt{page} || $opt{sort_by};
+    die "expected from_date and to_date to be datelike" unless defined $from_date && defined $to_date && $from_date->can('ymd') && $to_date->can('ymd');
+    die "from_date must be less than or equal to to_date" unless $from_date <= $to_date;
+
+    # Keep requesting from intervening years starting from the newest sermons
+    # until we run out of pages to query or the earliest date we have is less
+    # than the from_date, so we're guaranteed to have everything.
+    my @results;
+    for my $year ($from_date->year .. $to_date->year) {
+        my $next;
+        do {
+            my $list = await $self->list_sermons(year => $year, sort_by => 'newest', ($next ? (next => $next) : ()), %opt);
+            $next = $list->next;
+            push @results, @{ $list->results };
+        } until (!$next || (map { $_->preach_date } @results)[-1]->ymd lt $from_date->ymd);
+    }
+
+    $from_date = $from_date->ymd;
+    $to_date = $to_date->ymd;
+    @results = grep { $from_date le $_->preach_date->ymd && $_->preach_date->ymd le $to_date } @results;
+    return Net::SermonAudio::Model::SermonsList->new(
+        total_count => scalar @results,
+        results     => \@results,
+    );
+}
+
 async sub get_sermon($self, $sermon, %opt) {
     my $sermon_id = ref $sermon ? $sermon->sermon_id : assert_Str($sermon);
     $self->parse_sermon(await $self->get("node/sermons/$sermon_id", %opt))
