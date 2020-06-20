@@ -55,7 +55,8 @@ sub build_tx($self, $method, $path, %opts) {
     }
 
     my $ua = $opts{ua} // $self->ua;
-    return $ua->build_tx($method => $url => $headers, %opts{qw(form json)});
+    my %content = (($opts{form} ? (form => $opts{form}) : ()), ($opts{json} ? (json => $opts{json}) : ()));
+    return $ua->build_tx($method => $url => $headers, %content);
 }
 
 sub start($self, $tx, %opts) {

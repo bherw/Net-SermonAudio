@@ -119,7 +119,7 @@ async sub update_sermon_by_id($self, $sermon_id, %opt) {
     assert_Str($sermon_id);
     my $params = $self->_sermon_edit_params(%opt);
     $params->{broadcasterID} = assert_Str($opt{broadcaster_id});
-    my $tx = await $self->put("node/sermons/$sermon_id", form => $params, %opt);
+    my $tx = await $self->put("node/sermons/$sermon_id", json => $params, %opt);
     return $self->parse_sermon($tx);
 }
 
