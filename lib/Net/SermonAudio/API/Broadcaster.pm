@@ -16,10 +16,11 @@ no warnings 'experimental';
 extends qw(Net::SermonAudio::API);
 
 sub sermon_class { 'Net::SermonAudio::Model::Sermon' }
-sub sermons_list_class {'Net::SermonAudio::Model::SermonsList'}
+sub sermons_list_class { 'Net::SermonAudio::Model::SermonsList' }
 sub series_class { 'Net::SermonAudio::Model::SermonSeries' }
 sub series_list_class { 'Net::SermonAudio::Model::SeriesList' }
 sub speaker_class { 'Net::SermonAudio::Model::Speaker' }
+
 
 sub parse_sermon($self, $tx) {
     return $self->_parse($self->sermon_class, $tx);
@@ -54,9 +55,10 @@ async sub list_sermons($self, %opt) {
     $param{searchKeyword} = assert_Str($opt{search_keyword}) if defined $opt{search_keyword};
 
     my $url = $self->base_url->clone;
-    if ($opt{next}  && (my $next = assert_Str($opt{next}))) {
+    if ($opt{next} && (my $next = assert_Str($opt{next}))) {
         $url->path_query($next);
-    } else {
+    }
+    else {
         $url->path->merge('node/sermons');
         $url->query(\%param);
     }
@@ -93,13 +95,13 @@ async sub list_sermons_between($self, $from_date, $to_date, %opt) {
 
 async sub get_sermon($self, $sermon, %opt) {
     my $sermon_id = ref $sermon ? $sermon->sermon_id : assert_Str($sermon);
-    $self->parse_sermon(await $self->get("node/sermons/$sermon_id", %opt))
+    $self->parse_sermon(await $self->get("node/sermons/$sermon_id", %opt));
 }
 
 async sub create_sermon($self, %opt) {
     my $params = $self->_sermon_edit_params(%opt);
     my $tx = await $self->post('node/sermons', form => $params, %opt);
-    my $s= $self->parse_sermon($tx);
+    my $s = $self->parse_sermon($tx);
     $s;
 }
 
@@ -147,11 +149,11 @@ async sub speaker_exists($self, $speaker, %opt) {
 }
 
 async sub upload_audio($self, $sermon, $path) {
-    await $self->_upload_media('original-audio', $sermon, $path)
+    await $self->_upload_media('original-audio', $sermon, $path);
 }
 
 async sub upload_video($self, $sermon, $path) {
-    await $self->_upload_media('original-video', $sermon, $path)
+    await $self->_upload_media('original-video', $sermon, $path);
 }
 
 async sub list_series($self, $broadcaster_id, %opt) {
@@ -252,7 +254,8 @@ async sub _upload_media($self, $upload_type, $sermon, $path, %opt) {
 
     my $res = (await $self->post('media', form => $params))->res;
 
-    unless ($res->code == 201) { # CREATED
+    unless ($res->code == 201) {
+        # CREATED
         require Net::SermonAudio::X::BroadcasterApiException;
         Net::SermonAudio::X::BroadcasterApiException->throw(res => $res, message => "Unable to create media upload: " . $res->body);
     }
@@ -270,11 +273,12 @@ async sub _upload_media($self, $upload_type, $sermon, $path, %opt) {
         );
     }
 
-    1
+    1;
 }
 
+
 sub _assert_conv_bool {
-    assert_Bool($_[0]) ? 'True' : 'False'
+    assert_Bool($_[0]) ? 'True' : 'False';
 }
 
 1;

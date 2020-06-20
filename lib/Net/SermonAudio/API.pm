@@ -26,7 +26,7 @@ has preferred_language => (
     isa     => Str,
     default => sub {
         require POSIX;
-        (split(/\./, POSIX::setlocale(&POSIX::LC_ALL)))[0]
+        (split(/\./, POSIX::setlocale(&POSIX::LC_ALL)))[0];
     },
 );
 
@@ -68,23 +68,23 @@ sub _request($self, $method, $path, %opts) {
 }
 
 sub get {
-    shift->_request(GET => @_)
+    shift->_request(GET => @_);
 }
 
 sub post {
-    shift->_request(POST => @_)
+    shift->_request(POST => @_);
 }
 
 sub put {
-    shift->_request(PUT => @_)
+    shift->_request(PUT => @_);
 }
 
 sub patch {
-    shift->_request(PATCH => @_)
+    shift->_request(PATCH => @_);
 }
 
 sub delete {
-    shift->_request(DELETE => @_)
+    shift->_request(DELETE => @_);
 }
 
 1;
