@@ -11,7 +11,7 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : 2
    },
-   "name" : "Net::SermonAudio",
+   "name" : "Net-SermonAudio",
    "prereqs" : {
       "configure" : {
          "requires" : {
