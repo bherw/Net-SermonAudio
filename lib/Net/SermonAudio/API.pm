@@ -2,6 +2,7 @@ package Net::SermonAudio::API;
 use Mojo::UserAgent;
 use Mojo::URL;
 use Moo;
+use Scalar::Util qw(blessed);
 use Types::Standard qw(InstanceOf Str);
 
 use experimental 'signatures';
@@ -55,8 +56,29 @@ sub build_tx($self, $method, $path, %opts) {
     }
 
     my $ua = $opts{ua} // $self->ua;
-    my %content = (($opts{form} ? (form => $opts{form}) : ()), ($opts{json} ? (json => $opts{json}) : ()));
+    my %content;
+    if ($opts{form}) {
+        $content{form} = _stringify_map($opts{form});
+    }
+    if ($opts{json}) {
+        $content{json} = _stringify_map($opts{json});
+    }
+
     return $ua->build_tx($method => $url => $headers, %content);
+}
+
+sub _stringify_map {
+    my $input = shift;
+    my %result;
+    for my $key (keys %$input) {
+        if (defined $input->{$key} && blessed $input->{$key}) {
+            $result{$key} = $input->{$key} . '';
+        }
+        else {
+            $result{$key} = $input->{$key};
+        }
+    }
+    return \%result;
 }
 
 sub start($self, $tx, %opts) {

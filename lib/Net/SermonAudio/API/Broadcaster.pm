@@ -125,7 +125,7 @@ async sub update_sermon_by_id($self, $sermon_id, %opt) {
 
 async sub publish_sermon($self, $sermon, %opt) {
     my $sermon_id = ref $sermon ? $sermon->sermon_id : assert_Str($sermon);
-    return $self->_assert_success(await $self->patch("node/sermons/$sermon_id", form => { publishNow => 'True' }, %opt));
+    return $self->_assert_success(await $self->patch("node/sermons/$sermon_id", json => { publishNow => 'True' }, %opt));
 }
 
 async sub delete_sermon($self, $sermon, %opt) {
@@ -217,10 +217,20 @@ sub _assert_success($self, $tx) {
 }
 
 sub _parse($self, $class, $tx) {
-    return $class->parse($tx->res->json) if $tx->res->code >= 200 && $tx->res->code <= 299;
+    if (!($tx->res->code >= 200 && $tx->res->code <= 299)) {
+        require Net::SermonAudio::X::BroadcasterApiException;
+        Net::SermonAudio::X::BroadcasterApiException->throw(res => $tx->res, message => $tx->res->json);
+    }
 
-    require Net::SermonAudio::X::BroadcasterApiException;
-    Net::SermonAudio::X::BroadcasterApiException->throw(res => $tx->res, message => $tx->res->json);
+    my $parse_result;
+    eval {
+        $parse_result = $class->parse($tx->res->json);
+    } or do {
+        require Net::SermonAudio::X::BroadcasterApiException;
+        Net::SermonAudio::X::BroadcasterApiException->throw(res => $tx->res, message => $tx->res->content . "\n" . $@);
+    };
+
+    return $parse_result;
 }
 
 sub _sermon_edit_params($self, %opt) {
@@ -278,7 +288,7 @@ async sub _upload_media($self, $upload_type, $sermon, $path, %opt) {
 
 
 sub _assert_conv_bool {
-    assert_Bool($_[0]) ? 'True' : 'False';
+    assert_Bool($_[0]) ? 'true' : 'false';
 }
 
 1;
