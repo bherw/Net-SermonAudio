@@ -100,7 +100,7 @@ async sub get_sermon($self, $sermon, %opt) {
 
 async sub create_sermon($self, %opt) {
     my $params = $self->_sermon_edit_params(%opt);
-    my $tx = await $self->post('node/sermons', form => $params, %opt);
+    my $tx = await $self->post('node/sermons', json => $params, %opt);
     my $s = $self->parse_sermon($tx);
     $s;
 }
